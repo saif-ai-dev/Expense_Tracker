@@ -1,0 +1,152 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:linear-gradient(to bottom,#f7fdfc,#ffffff);
+}
+
+nav{
+    height:70px;
+    background:#00c896;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 50px;
+}
+
+nav h2{
+    color:white;
+    font-size:30px;
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+}
+
+nav ul li{
+    margin-left:30px;
+}
+
+nav ul li a{
+    text-decoration:none;
+    color:white;
+    font-size:18px;
+    transition:0.3s;
+}
+
+nav ul li a:hover{
+    color:#e8fff9;
+}
+
+.hero{
+    text-align:center;
+    margin-top:120px;
+}
+
+.hero h1{
+    font-size:60px;
+    color:#222;
+    margin-bottom:20px;
+}
+
+.hero p{
+    font-size:22px;
+    color:#666;
+    margin-bottom:50px;
+}
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+}
+
+.primary-btn,
+.secondary-btn{
+    display:inline-block;
+    text-decoration:none;
+    padding:15px 35px;
+    border-radius:8px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:all 0.3s ease;
+}
+
+.primary-btn{
+    background:#00c896;
+    color:white;
+    border:none;
+}
+
+.primary-btn:hover{
+    background:#00a67e;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+.secondary-btn{
+    background:white;
+    color:#00c896;
+    border:2px solid #00c896;
+}
+
+.secondary-btn:hover{
+    background:#00c896;
+    color:white;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+.login-container{
+    width:380px;
+    margin:100px auto;
+    background:white;
+    padding:40px;
+    border-radius:15px;box-shadow: 0 10px 25px rgba(0,0,0,1);
+    text-align:center;
+}
+
+.login-container h2{
+    margin-bottom:10px;
+    color:#222;
+}
+
+.login-container p{
+    color:#666;
+    margin-bottom:25px;
+}
+
+.login-container input{
+    width:100%;
+    padding:14px;
+    margin-bottom:18px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    outline:none;
+}
+
+.login-container input:focus{
+    border-color:#00c896;
+}
+
+.login-container button{
+    width:100%;
+}
+
+.register-link{
+    margin-top:20px;
+}
+
+.register-link a{
+    color:#00c896;
+    text-decoration:none;
+    font-weight:bold;
+}
+

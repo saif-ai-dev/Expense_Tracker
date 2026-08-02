@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Expense Tracker</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h2>Create Account</h2>
+
+    <p>Join Expense Tracker today</p>
+
+    <form>
+
+        <input type="text" placeholder="Full Name" required>
+
+        <input type="email" placeholder="Email" required>
+
+        <input type="password" placeholder="Password" required>
+
+        <button class="primary-btn">
+            Register
+        </button>
+
+    </form>
+
+    <p class="register-link">
+        Already have an account?
+        <a href="/login">Login</a>
+    </p>
+
+</div>
+
+</body>
+</html>
