@@ -12,17 +12,27 @@
 
 <div class="login-container">
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center;">
+                {{ messages[0] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <h2>Welcome Back 👋</h2>
 
     <p>Login to your Expense Tracker account</p>
 
-    <form>
+    <form method="POST">
 
         <input type="email"
+               name="email"
                placeholder="Enter Email"
                required>
 
         <input type="password"
+               name="password"
                placeholder="Enter Password"
                required>
 

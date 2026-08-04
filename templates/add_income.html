@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Income - Expense Tracker</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <h2>Add Income 💰</h2>
+
+        <p>Record your income</p>
+
+        <form method="POST">
+
+            <input type="text"
+                   name="source"
+                   placeholder="Income Source (Salary, Freelance, etc.)"
+                   required>
+
+            <input type="number"
+                   name="amount"
+                   placeholder="Enter Amount"
+                   required>
+
+            <button type="submit" class="primary-btn">
+                Add Income
+            </button>
+
+        </form>
+
+        <br>
+
+        <a href="/dashboard" class="primary-btn">
+            Back to Dashboard
+        </a>
+
+    </div>
+
+</body>
+
+</html>
