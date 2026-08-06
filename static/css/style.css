@@ -295,3 +295,94 @@ nav ul li a:hover{
     background:#009e78;
     transform:translateY(-3px);
 }
+
+.expense-container{
+    width:420px;
+    margin:60px auto;
+    background:#fff;
+    padding:35px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+.expense-container h1{
+    text-align:center;
+    color:#00c896;
+    margin-bottom:25px;
+}
+
+.expense-container label{
+    display:block;
+    font-weight:bold;
+    margin-top:15px;
+    margin-bottom:8px;
+}
+
+.expense-container input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.expense-container button{
+    width:100%;
+    margin-top:25px;
+}
+
+.back-btn{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    text-decoration:none;
+    color:#00c896;
+    font-weight:bold;
+}
+
+.back-btn:hover{
+    color:#009970;
+}
+
+.history-section{
+    width:90%;
+    max-width:1000px;
+    margin:50px auto;
+    text-align:center;
+}
+
+.history-section h1{
+    font-size:42px;
+    margin-bottom:10px;
+    color:#222;
+}
+
+.history-section p{
+    color:#666;
+    margin-bottom:30px;
+}
+
+.history-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+
+.history-table th{
+    background:#00c896;
+    color:white;
+    padding:15px;
+    font-size:18px;
+}
+
+.history-table td{
+    padding:15px;
+    border-bottom:1px solid #eee;
+}
+
+.history-table tr:hover{
+    background:#f5fffb;
+}

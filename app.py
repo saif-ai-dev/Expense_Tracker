@@ -119,6 +119,54 @@ def add_expense():
 
     return render_template("add_expense.html")
 
+@app.route("/transaction_history")
+def transaction_history():
+    conn = sqlite3.connect("Expense_Tracker.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, type, amount, category, description
+        FROM transactions
+        ORDER BY id DESC
+    """)
+
+    transactions = cursor.fetchall()
+    conn.close()
+
+    return render_template(
+        "transaction_history.html",
+        transactions=transactions
+    )
+
+@app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
+def edit_transaction(transaction_id):
+
+    conn = sqlite3.connect("expense_tracker.db")
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        category = request.form["category"]
+        amount = request.form["amount"]
+        description = request.form["description"]
+
+        cursor.execute("""
+            UPDATE transactions
+            SET category=?, amount=?, description=?
+            WHERE id=?
+        """, (category, amount, description, transaction_id))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("transaction_history"))
+
+    cursor.execute("SELECT * FROM transactions WHERE id=?", (transaction_id,))
+    transaction = cursor.fetchone()
+    print(transaction)
+    conn.close()
+
+    return render_template("edit_transaction.html", transaction=transaction)
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <h2>Expense Tracker</h2>
+
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/logout">Logout</a></li>
+    </ul>
+</nav>
+
+<section class="history-section">
+
+    <h1>📜 Transaction History</h1>
+    <p>View all your income and expense records.</p>
+
+    <table class="history-table">
+
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+    {% for transaction in transactions %}
+
+    <tr>
+        <td>{{ transaction[1] }}</td>
+        <td>₹ {{ transaction[2] }}</td>
+        <td>{{ transaction[3] }}</td>
+        <td>{{ transaction[4] }}</td>
+
+        <td>
+            <a href="{{ url_for('edit_transaction', transaction_id=transaction[0]) }}" class="edit-btn">Edit</a>
+        </td>
+    </tr>
+
+    {% endfor %}
+
+</tbody>
+
+    </table>
+
+</section>
+
+</body>
+</html>
