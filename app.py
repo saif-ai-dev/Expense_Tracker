@@ -35,6 +35,14 @@ CREATE TABLE IF NOT EXISTS transactions(
 def home():
     return render_template("home.html")
 
+@app.route("/features")
+def features():
+    return render_template("features.html")
+
+@app.route("/learn_more")
+def learn_more():
+    return render_template("learn_more.html")
+
 @app.route("/dashboard")
 def dashboard():
 
@@ -86,6 +94,30 @@ def add_income():
         return redirect(url_for("dashboard"))
 
     return render_template("add_income.html")
+
+@app.route("/add_expense", methods=["GET", "POST"])
+def add_expense():
+
+    if request.method == "POST":
+        category = request.form["category"]
+        amount = request.form["amount"]
+        description = request.form["description"]
+
+        conn = sqlite3.connect("Expense_Tracker.db")
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO transactions (user_id, type, amount, category, description)
+            VALUES (?, ?, ?, ?, ?)
+        """, (1, "Expense", amount, category, description))
+
+        conn.commit()
+        conn.close()
+
+        flash("Expense Added Successfully!")
+        return redirect(url_for("dashboard"))
+
+    return render_template("add_expense.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

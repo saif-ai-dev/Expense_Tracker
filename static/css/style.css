@@ -150,3 +150,148 @@ nav ul li a:hover{
     font-weight:bold;
 }
 
+.features-section{
+    max-width:1000px;
+    margin:80px auto;
+    text-align:center;
+    padding:20px;
+}
+
+.features-section h1{
+    font-size:48px;
+    color:#222;
+    margin-bottom:15px;
+}
+
+.features-section p{
+    color:#666;
+    font-size:18px;
+    margin-bottom:50px;
+}
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:25px;
+}
+
+.feature-card{
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
+    transition:.3s;
+}
+
+.feature-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 15px 30px rgba(0,0,0,.15);
+}
+
+.feature-card h3{
+    color:#00c896;
+    margin-bottom:15px;
+}
+
+.feature-card p{
+    color:#555;
+    font-size:16px;
+}
+
+.learn-more{
+    max-width:1000px;
+    margin:60px auto;
+    padding:20px;
+    text-align:center;
+}
+
+.learn-more h1{
+    font-size:42px;
+    color:#222;
+    margin-bottom:20px;
+}
+
+.learn-more .intro{
+    font-size:18px;
+    color:#666;
+    margin-bottom:40px;
+}
+
+.info-box{
+    background:white;
+    padding:30px;
+    margin-bottom:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    text-align:left;
+}
+
+.info-box h2{
+    color:#00c896;
+    margin-bottom:15px;
+}
+
+.info-box p{
+    color:#555;
+    line-height:1.8;
+}
+
+.info-box ul,
+.info-box ol{
+    padding-left:25px;
+}
+
+.info-box li{
+    margin:12px 0;
+    color:#444;
+    font-size:17px;
+}
+
+.cta-box{
+    background:#00c896;
+    color:white;
+    padding:50px;
+    border-radius:20px;
+    text-align:center;
+    margin-top:50px;
+}
+
+.cta-box h2{
+    color:white;
+    margin-bottom:15px;
+}
+
+.cta-box p{
+    color:white;
+    font-size:18px;
+    margin-bottom:25px;
+}
+
+.cta-box .primary-btn{
+    background:white;
+    color:#00c896;
+}
+
+.cta-box .primary-btn:hover{
+    background:#f5f5f5;
+}
+
+.dashboard-btn{
+    display:inline-block;
+    width: 100%;
+    background:#00c896;
+    color:white;
+    text-decoration:none;
+    padding:15px;
+    border-radius:10px;
+    margin: 12px 0;
+    font-size:18px;
+    font-weight:bold;
+    transition:0.3s;
+    cursor: pointer;
+}
+
+.dashboard-btn:hover{
+    background:#009e78;
+    transform:translateY(-3px);
+}

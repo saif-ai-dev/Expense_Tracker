@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Expense</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Add Expense</h1>
+
+        <form action="{{ url_for('add_expense') }}" method="POST">
+
+            <label>Expense Category</label>
+            <input type="text" name="category" placeholder="Food, Travel, Shopping..." required>
+
+            <label>Enter Amount</label>
+            <input type="number" name="amount" placeholder="Enter amount" required>
+
+            <label>Description</label>
+            <input type="text" name="description" placeholder="Optional">
+
+            <button type="submit">Add Expense</button>
+
+        </form>
+
+        <br>
+
+        <a href="{{ url_for('dashboard') }}">
+            <button>Back to Dashboard</button>
+        </a>
+
+    </div>
+
+</body>
+</html>
