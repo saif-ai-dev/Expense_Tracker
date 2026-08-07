@@ -386,3 +386,52 @@ nav ul li a:hover{
 .history-table tr:hover{
     background:#f5fffb;
 }
+
+.edit-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    margin-right: 8px;
+    font-weight: bold;
+    display: inline-block;
+    transition: 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: #2980b9;
+}
+
+.delete-btn{
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+.delete-btn:hover{
+    background: #b02a37;
+}
+
+.back-dashboard {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.back-btn {
+    display: inline-block;
+    background: #198754;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background: #146c43;
+}

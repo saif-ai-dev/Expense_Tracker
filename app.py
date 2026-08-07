@@ -160,12 +160,29 @@ def edit_transaction(transaction_id):
 
         return redirect(url_for("transaction_history"))
 
-    cursor.execute("SELECT * FROM transactions WHERE id=?", (transaction_id,))
+    cursor.execute("SELECT id, type, amount, category, description FROM transactions WHERE id=?", (transaction_id,))
     transaction = cursor.fetchone()
-    print(transaction)
+    print("Transaction =", transaction)
+    print("Length =", len(transaction))
     conn.close()
 
     return render_template("edit_transaction.html", transaction=transaction)
+
+@app.route("/delete_transaction/<int:transaction_id>")
+def delete_transaction(transaction_id):
+
+    conn = sqlite3.connect("Expense_Tracker.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM transactions WHERE id=?",
+        (transaction_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("transaction_history"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
