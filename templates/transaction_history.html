@@ -24,6 +24,39 @@
 <section class="history-section">
 
     <h1>📜 Transaction History</h1>
+
+    <form method="GET" action="{{ url_for('transaction_history') }}" class="search-form">
+
+    <input
+        type="text"
+        name="search"
+        placeholder="🔍 Search by Category or Description..."
+        value="{{ request.args.get('search', '') }}">
+
+        <select name="type" class="filter-select">
+    <option value="all" {% if request.args.get('type', 'all') == 'all' %}selected{% endif %}>
+        All
+    </option>
+
+    <option value="Income" {% if request.args.get('type') == 'Income' %}selected{% endif %}>
+        Income
+    </option>
+
+    <option value="Expense" {% if request.args.get('type') == 'Expense' %}selected{% endif %}>
+        Expense
+    </option>
+</select>
+
+    <button type="submit" class="search-btn">
+        Search
+    </button>
+
+    <a href="{{ url_for('transaction_history') }}" class="reset-btn">
+        Reset
+    </a>
+
+</form>
+
     <p>View all your income and expense records.</p>
 
     <table class="history-table">
@@ -71,7 +104,7 @@
 </div>
 
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     
+
      <script>
 function confirmDelete(deleteUrl) {
     Swal.fire({

@@ -435,3 +435,60 @@ nav ul li a:hover{
 .back-btn:hover {
     background: #146c43;
 }
+
+.search-form{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:25px 0;
+}
+
+.search-form input{
+    width:320px;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.search-btn{
+    background:#0d6efd;
+    color:white;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.search-btn:hover{
+    background:#0b5ed7;
+}
+
+.reset-btn{
+    background:#6c757d;
+    color:white;
+    text-decoration:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.reset-btn:hover{
+    background:#5a6268;
+}
+
+.filter-select {
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+}
+
+.filter-select:focus {
+    border-color: #0d6efd;
+}

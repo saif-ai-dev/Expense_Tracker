@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports - Expense Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo">
+            Expense Tracker
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('transaction_history') }}">
+                Transactions
+            </a>
+
+            <a href="{{ url_for('reports') }}">
+                Reports
+            </a>
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        </div>
+    </nav>
+
+
+    <!-- Reports Section -->
+    <section class="reports-section">
+
+        <h1>📊 Financial Reports</h1>
+
+        <p>
+            Analyze your income and expenses.
+        </p>
+
+
+        <!-- Report Cards -->
+        <div class="report-cards">
+
+            <!-- Total Income -->
+            <div class="report-card income-card">
+
+                <h3>Total Income</h3>
+
+                <h2>
+                    ₹ {{ total_income }}
+                </h2>
+
+            </div>
+
+
+            <!-- Total Expense -->
+            <div class="report-card expense-card">
+
+                <h3>Total Expense</h3>
+
+                <h2>
+                    ₹ {{ total_expense }}
+                </h2>
+
+            </div>
+
+
+            <!-- Current Balance -->
+            <div class="report-card balance-card">
+
+                <h3>Current Balance</h3>
+
+                <h2>
+                    ₹ {{ balance }}
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <!-- Category-wise Expenses -->
+        <div class="category-report">
+
+            <h2>Category-wise Expenses</h2>
+
+            <table class="report-table">
+
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Total Spent</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for category, amount in category_expenses %}
+
+                    <tr>
+                        <td>{{ category }}</td>
+
+                        <td>
+                            ₹ {{ amount }}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Income vs Expense Chart -->
+        <div class="chart-container">
+
+            <h2>Income vs Expense</h2>
+
+            <canvas id="incomeExpenseChart"></canvas>
+
+        </div>
+
+
+        <!-- Back to Dashboard -->
+        <div class="back-dashboard">
+
+            <a href="{{ url_for('dashboard') }}">
+                ← Back to Dashboard
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- Chart JavaScript -->
+    <script>
+
+        const income = { total_income };
+        const expense = { total_expense }
+
+        const ctx = document.getElementById('incomeExpenseChart');
+
+        new Chart(ctx, {
+
+            type: 'bar',
+
+            data: {
+
+                labels: [
+                    'Income',
+                    'Expense'
+                ],
+
+                datasets: [{
+
+                    label: 'Amount (₹)',
+
+                    data: [
+                        income,
+                        expense
+                    ],
+
+                    backgroundColor: [
+                        '#22c55e',
+                        '#ef4444'
+                    ],
+
+                    borderColor: [
+                        '#16a34a',
+                        '#dc2626'
+                    ],
+
+                    borderWidth: 1
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+
+                            callback: function(value) {
+                                return '₹ ' + value;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,3 +1,5 @@
+from unicodedata import category
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 
@@ -72,6 +74,48 @@ def dashboard():
         balance=balance
     )
 
+@app.route("/reports")
+def reports():
+    conn = sqlite3.connect("Expense_Tracker.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'Income'
+    """)
+    total_income = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'Expense'
+    """)
+    total_expense = cursor.fetchone()[0]
+
+
+    balance = total_income - total_expense
+
+    cursor.execute("""
+        SELECT category, SUM (amount)
+        FROM transactions
+        WHERE type = 'Expense'
+        GROUP BY category
+    """)
+
+    category_expenses = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "reports.html",
+        total_income=total_income,
+        total_expense=total_expense,
+        balance=balance,
+        
+        category_expenses=category_expenses
+    )
+
 @app.route("/add_income", methods=["GET", "POST"])
 def add_income():
 
@@ -121,16 +165,33 @@ def add_expense():
 
 @app.route("/transaction_history")
 def transaction_history():
+
+    search = request.args.get("search", "")
+    transaction_type = request.args.get("type", "all")
+
     conn = sqlite3.connect("Expense_Tracker.db")
     cursor = conn.cursor()
 
-    cursor.execute("""
+    query = """
         SELECT id, type, amount, category, description
         FROM transactions
-        ORDER BY id DESC
-    """)
+        WHERE 1=1
+    """
+
+    params = []
+
+    if search:
+        query += " AND (category LIKE ? OR description LIKE ?)"
+        params.extend([f"%{search}%", f"%{search}%"])
+
+    if transaction_type != "all":
+        query += " AND type = ?"
+        params.append(transaction_type)
+
+    cursor.execute(query, params)
 
     transactions = cursor.fetchall()
+
     conn.close()
 
     return render_template(
