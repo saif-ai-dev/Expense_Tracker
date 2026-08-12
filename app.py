@@ -79,6 +79,7 @@ def reports():
     conn = sqlite3.connect("Expense_Tracker.db")
     cursor = conn.cursor()
 
+    # Total Income
     cursor.execute("""
         SELECT COALESCE(SUM(amount), 0)
         FROM transactions
@@ -86,6 +87,7 @@ def reports():
     """)
     total_income = cursor.fetchone()[0]
 
+    # Total Expense
     cursor.execute("""
         SELECT COALESCE(SUM(amount), 0)
         FROM transactions
@@ -93,16 +95,16 @@ def reports():
     """)
     total_expense = cursor.fetchone()[0]
 
-
+    # Current Balance
     balance = total_income - total_expense
 
+    # Category-wise Expenses
     cursor.execute("""
-        SELECT category, SUM (amount)
+        SELECT category, COALESCE(SUM(amount), 0)
         FROM transactions
         WHERE type = 'Expense'
         GROUP BY category
     """)
-
     category_expenses = cursor.fetchall()
 
     conn.close()
@@ -112,7 +114,6 @@ def reports():
         total_income=total_income,
         total_expense=total_expense,
         balance=balance,
-        
         category_expenses=category_expenses
     )
 
