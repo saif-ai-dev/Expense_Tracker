@@ -25,6 +25,7 @@
         .reports-section > p {
             text-align: center;
             margin-bottom: 30px;
+            color: var(--muted);
         }
 
         .report-cards {
@@ -52,7 +53,7 @@
         }
 
         .income-card {
-            border-top: 5px solid #22c55e;
+            border-top: 5px solid #0EA472;
         }
 
         .expense-card {
@@ -60,19 +61,27 @@
         }
 
         .balance-card {
-            border-top: 5px solid #3b82f6;
+            border-top: 5px solid #6C5CE7;
         }
 
-        .category-report {
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            align-items: start;
+            margin-bottom: 30px;
+        }
+
+        .category-report,
+        .chart-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
         }
 
         .category-report h2,
-        .chart-container h2 {
+        .chart-card h2 {
             text-align: center;
             margin-bottom: 20px;
         }
@@ -88,7 +97,7 @@
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        
+
         .report-table tbody tr {
            transition: 0.2s ease;
         }
@@ -104,17 +113,17 @@
         .report-table td:last-child,
         .report-table th:last-child {
            text-align: right;
-      }
+        }
 
         .report-table td:first-child,
         .report-table th:first-child {
            text-align: left;
-   }
+        }
         .report-table th {
             background: #f5f5f5;
         }
 
-        .chart-container {
+        .bar-chart-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
@@ -122,14 +131,8 @@
             margin-bottom: 30px;
         }
 
-        #incomeExpenseChart {
-            width: 100%;
-            max-width: 800px;
-            height: 400px;
-            display: block;
-            margin: auto;
-            background: #ffffff;
-            border-radius: 12px;
+        #categoryChart, #incomeExpenseChart {
+            max-height: 300px;
         }
 
         .back-dashboard {
@@ -140,18 +143,18 @@
         .back-dashboard a {
             display: inline-block;
             padding: 12px 25px;
-            background: #2563eb;
+            background: #6C5CE7;
             color: white;
             text-decoration: none;
             border-radius: 8px;
         }
 
         .back-dashboard a:hover {
-            background: #1d4ed8;
+            background: #5849C2;
         }
 
         @media (max-width: 768px) {
-            .report-cards {
+            .report-cards, .reports-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -170,12 +173,18 @@
         </div>
 
         <div class="nav-links">
-            <a href="{{ url_for('home') }}">Home</a>
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('transaction_history') }}">Transactions</a>
-            <a href="{{ url_for('reports') }}">Reports</a>
+            <a href="{{ url_for('reports') }}" class="active">Reports</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         </div>
     </nav>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-msg">{{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
 
     <section class="reports-section">
 
@@ -204,187 +213,105 @@
 
         </div>
 
-        <div class="category-report">
+        <div class="reports-grid">
 
-            <h2>Category-wise Expenses</h2>
+            <div class="chart-card">
+                <h2>Category Breakdown</h2>
+                {% if category_expenses %}
+                <canvas id="categoryChart"></canvas>
+                {% else %}
+                <p style="text-align:center; color:var(--muted);">No expense data yet.</p>
+                {% endif %}
+            </div>
 
-            <table class="report-table">
+            <div class="category-report">
+                <h2>Category-wise Expenses</h2>
 
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Total Spent</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for category, amount in category_expenses %}
-
-                    <tr>
-                        <td>{{ category }}</td>
-                        <td>₹ {{ "{:,.0f}".format(amount) }}</td>
-                    </tr>
-
-                    {% else %}
-
-                    <tr>
-                        <td colspan="2">
-                            No expense data available.
-                        </td>
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category, amount in category_expenses %}
+                        <tr>
+                            <td>{{ category }}</td>
+                            <td>₹ {{ "{:,.0f}".format(amount) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2">No expense data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
         </div>
 
-        <div class="chart-container">
-
+        <div class="bar-chart-card">
             <h2>Income vs Expense</h2>
-
-            <canvas id="incomeExpenseChart"
-                    width="800"
-                    height="400">
-            </canvas>
-
+            <canvas id="incomeExpenseChart"></canvas>
         </div>
 
         <div class="back-dashboard">
-
             <a href="{{ url_for('dashboard') }}">
                 ← Back to Dashboard
             </a>
-
         </div>
 
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        {% if category_expenses %}
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: [{% for cat, amt in category_expenses %}"{{ cat }}"{{ "," if not loop.last }}{% endfor %}],
+                datasets: [{
+                    data: [{% for cat, amt in category_expenses %}{{ amt }}{{ "," if not loop.last }}{% endfor %}],
+                    backgroundColor: ['#6C5CE7', '#E0435F', '#0EA472', '#f4b740', '#3F2F9E', '#5849C2', '#8b7ff0', '#c9455e'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Poppins' } } }
+                }
+            }
+        });
+        {% endif %}
 
-        const income = Number("{{ total_income }}");
-        const expense = Number("{{ total_expense }}");
-
-        const canvas =
-            document.getElementById("incomeExpenseChart");
-
-        const ctx = canvas.getContext("2d");
-
-
-        const maxValue = Math.max(income, expense, 1);
-
-        const chartHeight = 280;
-
-        const baseY = 330;
-
-        const barWidth = 130;
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        ctx.beginPath();
-
-        ctx.moveTo(100, baseY);
-
-        ctx.lineTo(700, baseY);
-
-        ctx.strokeStyle = "#555";
-
-        ctx.stroke();
-
-        
-       ctx.strokeStyle = "#e5e7eb";
-       ctx.lineWidth = 1;
-
-       for (let i = 0; i <= 4; i++) {
-
-       const y = baseY - (i * chartHeight / 4);
-
-        ctx.beginPath();
-
-        ctx.moveTo(100, y);
-        ctx.lineTo(700, y);
-
-        ctx.stroke();
-    }
-      
-        ctx.fillStyle = "#555";
-        ctx.font = "13px Arial";
-        ctx.textAlign = "right";
-
-        for (let i = 0; i <= 4; i++) {
-
-        const value = (maxValue / 4) * i;
-        const y = baseY - (i * chartHeight / 4);
-
-        ctx.fillText("₹ " + Math.round(value).toLocaleString("en-IN"),90,y + 5);
-    }
-
-        const incomeHeight =
-            (income / maxValue) * chartHeight;
-
-
-        ctx.fillStyle = "#22c55e";
-
-        ctx.fillRect(
-            200,
-            baseY - incomeHeight,
-            barWidth,
-            incomeHeight
-        );
-
-        const expenseHeight =
-            (expense / maxValue) * chartHeight;
-
-
-        ctx.fillStyle = "#ef4444";
-
-        ctx.fillRect(
-            470,
-            baseY - expenseHeight,
-            barWidth,
-            expenseHeight
-        );
-
-        ctx.fillStyle = "#222";
-
-        ctx.font = "bold 17px Arial";
-
-
-        ctx.fillText(
-            "Income",
-            265,
-            365
-        );
-
-        ctx.fillText(
-            "Expense",
-            535,
-            365
-        )
-
-        ctx.font = "bold 15px Arial";
-
-        ctx.fillText(
-            "₹ " + income.toLocaleString("en-IN"),
-            265,
-            baseY - incomeHeight - 12
-        );
-
-        ctx.fillText(
-            "₹ " + expense.toLocaleString("en-IN"),
-            535,
-            baseY - expenseHeight - 12
-        );
-
+        new Chart(document.getElementById('incomeExpenseChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Income', 'Expense'],
+                datasets: [{
+                    data: [{{ total_income }}, {{ total_expense }}],
+                    backgroundColor: ['#0EA472', '#ef4444'],
+                    borderRadius: 8,
+                    maxBarThickness: 90
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: function(v) { return '₹ ' + v.toLocaleString('en-IN'); } }
+                    }
+                }
+            }
+        });
     </script>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 

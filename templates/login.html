@@ -10,49 +10,81 @@
 
 <body>
 
-<div class="login-container">
+<div class="auth-page">
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center;">
-                {{ messages[0] }}
+    <div class="auth-visual">
+        <div class="auth-visual-inner">
+            <div class="logo" style="margin-bottom:40px;">💜 Expense Tracker</div>
+            <h1>Your money,<br>finally organized.</h1>
+            <p>Log in to see your balance, add transactions and track exactly where your money goes.</p>
+
+            <div class="auth-mini-card">
+                <div class="preview-card-header">
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                </div>
+                <p class="preview-label">Current Balance</p>
+                <h2 class="preview-balance">₹ 24,850</h2>
+                <div class="preview-bar-track">
+                    <div class="preview-bar-fill"></div>
+                </div>
             </div>
-        {% endif %}
-    {% endwith %}
+        </div>
+    </div>
 
-    <h2>Welcome Back 👋</h2>
+    <div class="auth-form-side">
 
-    <p>Login to your Expense Tracker account</p>
+        <nav class="auth-nav">
+            <h2>Expense Tracker</h2>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('features') }}">Features</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            </ul>
+        </nav>
 
-    <form method="POST">
+        <div class="login-container">
 
-        <input type="email"
-               name="email"
-               placeholder="Enter Email"
-               required>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-msg">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
 
-        <input type="password"
-               name="password"
-               placeholder="Enter Password"
-               required>
+            <h2>Welcome Back 👋</h2>
 
-        <button class="primary-btn">
-            Login
-        </button>
+            <p>Login to your Expense Tracker account</p>
 
-    </form>
+            <form method="POST">
 
-    <p class="register-link">
+                <input type="email"
+                       name="email"
+                       placeholder="Enter Email"
+                       required>
 
-        Don't have an account?
+                <input type="password"
+                       name="password"
+                       placeholder="Enter Password"
+                       required>
 
-        <a href="/register">
-            Register
-        </a>
+                <button class="primary-btn">
+                    Login
+                </button>
 
-    </p>
+            </form>
+
+            <p class="register-link">
+                Don't have an account?
+                <a href="/register">Register</a>
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

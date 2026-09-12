@@ -15,85 +15,105 @@
     <h2>Expense Tracker</h2>
 
     <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/dashboard">Dashboard</a></li>
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('transaction_history') }}" class="active">History</a></li>
+        <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
     </ul>
 </nav>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-msg">{{ messages[0] }}</div>
+    {% endif %}
+{% endwith %}
 
 <section class="history-section">
 
     <h1>📜 Transaction History</h1>
+    <p>View, search and manage all your income and expense records.</p>
 
     <form method="GET" action="{{ url_for('transaction_history') }}" class="search-form">
 
-    <input
-        type="text"
-        name="search"
-        placeholder="🔍 Search by Category or Description..."
-        value="{{ request.args.get('search', '') }}">
+        <input
+            type="text"
+            name="search"
+            placeholder="🔍 Search by category or description..."
+            value="{{ request.args.get('search', '') }}">
 
         <select name="type" class="filter-select">
-    <option value="all" {% if request.args.get('type', 'all') == 'all' %}selected{% endif %}>
-        All
-    </option>
+            <option value="all" {% if request.args.get('type', 'all') == 'all' %}selected{% endif %}>
+                All
+            </option>
+            <option value="Income" {% if request.args.get('type') == 'Income' %}selected{% endif %}>
+                Income
+            </option>
+            <option value="Expense" {% if request.args.get('type') == 'Expense' %}selected{% endif %}>
+                Expense
+            </option>
+        </select>
 
-    <option value="Income" {% if request.args.get('type') == 'Income' %}selected{% endif %}>
-        Income
-    </option>
+        <button type="submit" class="search-btn">
+            Search
+        </button>
 
-    <option value="Expense" {% if request.args.get('type') == 'Expense' %}selected{% endif %}>
-        Expense
-    </option>
-</select>
+        <a href="{{ url_for('transaction_history') }}" class="reset-btn">
+            Reset
+        </a>
 
-    <button type="submit" class="search-btn">
-        Search
-    </button>
+    </form>
 
-    <a href="{{ url_for('transaction_history') }}" class="reset-btn">
-        Reset
-    </a>
+    <div class="table-wrap">
 
-</form>
+        {% if transactions %}
+        <table class="history-table">
 
-    <p>View all your income and expense records.</p>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-    <table class="history-table">
+            <tbody>
 
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+                {% for transaction in transactions %}
 
-        <tbody>
+                <tr>
+                    <td>
+                        <span class="type-badge {{ 'income' if transaction[1]=='Income' else 'expense' }}">
+                            {{ transaction[1] }}
+                        </span>
+                    </td>
+                    <td class="amount-cell {{ 'income' if transaction[1]=='Income' else 'expense' }}">
+                        {{ '+' if transaction[1]=='Income' else '−' }} ₹{{ "%.2f"|format(transaction[2]) }}
+                    </td>
+                    <td>{{ transaction[3] }}</td>
+                    <td>{{ transaction[4] or '—' }}</td>
 
-    {% for transaction in transactions %}
+                    <td>
+                        <div class="row-actions">
+                            <a href="{{ url_for('edit_transaction', transaction_id=transaction[0]) }}" class="edit-btn">Edit</a>
+                            <a href="#" class="delete-btn" onclick="confirmDelete('{{ url_for('delete_transaction', transaction_id=transaction[0]) }}')">
+                                Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
 
-    <tr>
-        <td>{{ transaction[1] }}</td>
-        <td>₹ {{ transaction[2] }}</td>
-        <td>{{ transaction[3] }}</td>
-        <td>{{ transaction[4] }}</td>
+                {% endfor %}
 
-        <td>
-            <a href="{{ url_for('edit_transaction', transaction_id=transaction[0]) }}" class="edit-btn">Edit</a>
-            <a href="#" class="delete-btn"onclick="confirmDelete('{{ url_for('delete_transaction', transaction_id=transaction[0]) }}')">
-   Delete
-</a>
-        </td>
-    </tr>
+            </tbody>
 
-    {% endfor %}
+        </table>
+        {% else %}
+        <div class="empty-state">No transactions match your search — try a different filter or add a new entry.</div>
+        {% endif %}
 
-</tbody>
-
-    </table>
+    </div>
 
 </section>
 
@@ -112,7 +132,7 @@ function confirmDelete(deleteUrl) {
         text: "You won't be able to recover this transaction!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#E0435F',
         cancelButtonColor: '#6c757d',
         confirmButtonText: '🗑️ Yes, Delete',
         cancelButtonText: 'Cancel'
@@ -124,7 +144,6 @@ function confirmDelete(deleteUrl) {
 }
 </script>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-
-

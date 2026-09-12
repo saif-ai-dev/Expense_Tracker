@@ -12,51 +12,113 @@
 
 <body>
 
-    <div class="login-container">
+    <nav>
+        <h2>Expense Tracker</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}" class="active">Dashboard</a></li>
+            <li><a href="{{ url_for('transaction_history') }}">History</a></li>
+            <li><a href="{{ url_for('reports') }}">Reports</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
 
-        <h2>Welcome 👋</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-msg">{{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
 
-        <p>Successfully Logged In</p>
+    <section class="dashboard-page">
 
-        <br>
+        <div class="dashboard-greeting">
+            <h1>Welcome back{% if current_user_name %}, {{ current_user_name.split(' ')[0] }}{% endif %} 👋</h1>
+            <p>Here's where your money stands right now.</p>
+        </div>
 
-        <h3>Total Income</h3>
-        <h2>₹{{ total_income }}</h2>
+        <div class="stat-grid">
 
-        <br>
+            <div class="dashboard-card income-card-dash">
+                <div class="dash-icon">💰</div>
+                <div>
+                    <h3>Total Income</h3>
+                    <h2 data-count="{{ total_income }}" data-prefix="₹">₹0</h2>
+                </div>
+            </div>
 
-        <h3>Total Expenses</h3>
-        <h2>₹{{ total_expense }}</h2>
+            <div class="dashboard-card expense-card-dash">
+                <div class="dash-icon">💸</div>
+                <div>
+                    <h3>Total Expenses</h3>
+                    <h2 data-count="{{ total_expense }}" data-prefix="₹">₹0</h2>
+                </div>
+            </div>
 
-        <br>
+            <div class="dashboard-card balance-card-dash">
+                <div class="dash-icon">📊</div>
+                <div>
+                    <h3>Current Balance</h3>
+                    <h2 data-count="{{ balance }}" data-prefix="₹">₹0</h2>
+                </div>
+            </div>
 
-        <h3>Current Balance</h3>
-        <h2>₹{{ balance }}</h2>
+        </div>
 
-        <br>
+        <div class="quick-actions-grid">
 
-        <a href="/add_income" class="dashboard-btn">
-            💰 Add Income
-        </a>
+            <a href="/add_income" class="quick-action-card">
+                <span class="qa-icon">💰</span>
+                <span>Add Income</span>
+            </a>
 
-        <a href="/add_expense" class="dashboard-btn">
-            💸 Add Expense
-        </a>
+            <a href="/add_expense" class="quick-action-card">
+                <span class="qa-icon">💸</span>
+                <span>Add Expense</span>
+            </a>
 
-        <a href="/transaction_history" class="dashboard-btn">
-           📜 Transaction History
-        </a>
-        
-        <a href="/reports" class="dashboard-btn">
-            📊 Reports
-        </a>
+            <a href="/transaction_history" class="quick-action-card">
+                <span class="qa-icon">📜</span>
+                <span>Transaction History</span>
+            </a>
 
-        <a href="/" class="dashboard-btn">
-            🚪 Logout
-        </a>
+            <a href="/reports" class="quick-action-card">
+                <span class="qa-icon">📈</span>
+                <span>Reports</span>
+            </a>
 
-    </div>
+        </div>
 
+        <div class="section-title">
+            <h2>Recent Activity</h2>
+            <a href="{{ url_for('transaction_history') }}">View all →</a>
+        </div>
+
+        <div class="table-wrap">
+            {% if recent %}
+            <table class="history-table">
+                <thead>
+                    <tr><th>Type</th><th>Category</th><th>Description</th><th>Amount</th></tr>
+                </thead>
+                <tbody>
+                    {% for t in recent %}
+                    <tr>
+                        <td><span class="type-badge {{ 'income' if t[1]=='Income' else 'expense' }}">{{ t[1] }}</span></td>
+                        <td>{{ t[3] }}</td>
+                        <td>{{ t[4] or '—' }}</td>
+                        <td class="amount-cell {{ 'income' if t[1]=='Income' else 'expense' }}">
+                            {{ '+' if t[1]=='Income' else '−' }} ₹{{ "%.2f"|format(t[2]) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No transactions yet — add your first income or expense above.</div>
+            {% endif %}
+        </div>
+
+    </section>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
 </html>

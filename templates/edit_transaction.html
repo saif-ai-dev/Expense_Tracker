@@ -11,46 +11,76 @@
 
 <body>
 
-<div class="expense-container">
+<nav>
+    <h2>Expense Tracker</h2>
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('transaction_history') }}">History</a></li>
+        <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
 
-    <h1>✏️ Edit Transaction</h1>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-msg">{{ messages[0] }}</div>
+    {% endif %}
+{% endwith %}
 
-    <form method="POST">
+<div class="form-page">
 
-        <label>Category</label>
-        <input
-            type="text"
-            name="category"
-            value="{{ transaction[3] }}"
-            required
-        >
+    <div class="expense-container {{ 'income-mode' if transaction[1]=='Income' else 'expense-mode' }}">
 
-        <label>Amount</label>
-        <input
-            type="number"
-            name="amount"
-            value="{{ transaction[2] }}"
-            required
-        >
+        <div class="form-icon-header">{{ '💰' if transaction[1]=='Income' else '💸' }}</div>
 
-        <label>Description</label>
-        <input
-            type="text"
-            name="description"
-            value="{{ transaction[4] }}"
-        >
+        <h1>Edit Transaction</h1>
+        <p class="form-subtext">
+            Updating a
+            <span class="type-badge {{ 'income' if transaction[1]=='Income' else 'expense' }}">{{ transaction[1] }}</span>
+            entry
+        </p>
 
-        <button type="submit" class="primary-btn">
-            💾 Update Transaction
-        </button>
+        <form method="POST">
 
-    </form>
+            <label>{{ 'Source' if transaction[1]=='Income' else 'Category' }}</label>
+            <input
+                type="text"
+                name="category"
+                value="{{ transaction[3] }}"
+                required
+            >
 
-    <a href="/transaction_history" class="back-btn">
-        ⬅ Back to Transaction History
-    </a>
+            <label>Amount (₹)</label>
+            <input
+                type="number"
+                name="amount"
+                min="0.01"
+                step="0.01"
+                value="{{ transaction[2] }}"
+                required
+            >
+
+            <label>Description</label>
+            <input
+                type="text"
+                name="description"
+                value="{{ transaction[4] or '' }}"
+            >
+
+            <button type="submit" class="primary-btn">
+                💾 Update Transaction
+            </button>
+
+        </form>
+
+        <a href="/transaction_history" class="back-btn">
+            ⬅ Back to Transaction History
+        </a>
+
+    </div>
 
 </div>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

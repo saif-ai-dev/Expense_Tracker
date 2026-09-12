@@ -11,38 +11,71 @@
 
 <body>
 
-    <div class="login-container">
+    <nav>
+        <h2>Expense Tracker</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('transaction_history') }}">History</a></li>
+            <li><a href="{{ url_for('reports') }}">Reports</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
 
-        <h2>Add Income 💰</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-msg">{{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
 
-        <p>Record your income</p>
+    <div class="form-page">
 
-        <form method="POST">
+        <div class="expense-container income-mode">
 
-            <input type="text"
-                   name="source"
-                   placeholder="Income Source (Salary, Freelance, etc.)"
-                   required>
+            <div class="form-icon-header">💰</div>
 
-            <input type="number"
-                   name="amount"
-                   placeholder="Enter Amount"
-                   required>
+            <h1>Add Income</h1>
+            <p class="form-subtext">Record money coming in</p>
 
-            <button type="submit" class="primary-btn">
-                Add Income
-            </button>
+            <form method="POST">
 
-        </form>
+                <label>Income Source</label>
+                <input type="text"
+                       id="source"
+                       name="source"
+                       placeholder="e.g. Salary, Freelance, Bonus"
+                       required>
 
-        <br>
+                <div class="chip-row">
+                    <span class="chip" data-target="source">Salary</span>
+                    <span class="chip" data-target="source">Freelance</span>
+                    <span class="chip" data-target="source">Business</span>
+                    <span class="chip" data-target="source">Rental Income</span>
+                    <span class="chip" data-target="source">Bonus</span>
+                </div>
 
-        <a href="/dashboard" class="primary-btn">
-            Back to Dashboard
-        </a>
+                <label>Amount (₹)</label>
+                <input type="number"
+                       name="amount"
+                       min="0.01"
+                       step="0.01"
+                       placeholder="0.00"
+                       required>
+
+                <button type="submit" class="primary-btn">
+                    Add Income
+                </button>
+
+            </form>
+
+            <a href="/dashboard" class="back-btn">
+                ← Back to Dashboard
+            </a>
+
+        </div>
 
     </div>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
 </html>

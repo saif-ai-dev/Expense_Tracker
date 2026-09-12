@@ -1,13 +1,24 @@
-from unicodedata import category
+from functools import wraps
+from datetime import date
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "expense_tracker_secret"
 
+DB_NAME = "Expense_Tracker.db"
+
+
+def get_db():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 def create_database():
-    conn = sqlite3.connect("Expense_Tracker.db")
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -19,51 +30,82 @@ def create_database():
     """)
 
     cursor.execute("""
-CREATE TABLE IF NOT EXISTS transactions(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    type TEXT NOT NULL,
-    amount REAL NOT NULL,
-    category TEXT NOT NULL,
-    description TEXT,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-)
-""")
+        CREATE TABLE IF NOT EXISTS transactions(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            type TEXT NOT NULL,
+            amount REAL NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+
+    # Migration: add a "date" column for existing databases created before
+    # this feature existed. Safe to run every startup — SQLite raises
+    # OperationalError if the column is already there, which we ignore.
+    try:
+        cursor.execute("ALTER TABLE transactions ADD COLUMN date TEXT")
+    except sqlite3.OperationalError:
+        pass
 
     conn.commit()
     conn.close()
+
+
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapped(*args, **kwargs):
+        if "user_id" not in session:
+            flash("Please log in to continue.")
+            return redirect(url_for("login"))
+        return view_func(*args, **kwargs)
+    return wrapped
+
+
+@app.context_processor
+def inject_user():
+    return {"current_user_name": session.get("user_name")}
+
 
 @app.route("/")
 def home():
     return render_template("home.html")
 
+
 @app.route("/features")
 def features():
     return render_template("features.html")
+
 
 @app.route("/learn_more")
 def learn_more():
     return render_template("learn_more.html")
 
-@app.route("/dashboard")
-def dashboard():
 
-    conn = sqlite3.connect("Expense_Tracker.db")
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    user_id = session["user_id"]
+    conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT SUM(amount) FROM transactions WHERE type='Income'")
+    cursor.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type='Income' AND user_id=?", (user_id,))
     total_income = cursor.fetchone()[0]
 
-    cursor.execute("SELECT SUM(amount) FROM transactions WHERE type='Expense'")
+    cursor.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type='Expense' AND user_id=?", (user_id,))
     total_expense = cursor.fetchone()[0]
 
+    cursor.execute("""
+        SELECT id, type, amount, category, description, date
+        FROM transactions
+        WHERE user_id=?
+        ORDER BY id DESC
+        LIMIT 5
+    """, (user_id,))
+    recent = cursor.fetchall()
+
     conn.close()
-
-    if total_income is None:
-        total_income = 0
-
-    if total_expense is None:
-        total_expense = 0
 
     balance = total_income - total_expense
 
@@ -71,40 +113,32 @@ def dashboard():
         "dashboard.html",
         total_income=total_income,
         total_expense=total_expense,
-        balance=balance
+        balance=balance,
+        recent=recent
     )
 
+
 @app.route("/reports")
+@login_required
 def reports():
-    conn = sqlite3.connect("Expense_Tracker.db")
+    user_id = session["user_id"]
+    conn = get_db()
     cursor = conn.cursor()
 
-    # Total Income
-    cursor.execute("""
-        SELECT COALESCE(SUM(amount), 0)
-        FROM transactions
-        WHERE type = 'Income'
-    """)
+    cursor.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type='Income' AND user_id=?", (user_id,))
     total_income = cursor.fetchone()[0]
 
-    # Total Expense
-    cursor.execute("""
-        SELECT COALESCE(SUM(amount), 0)
-        FROM transactions
-        WHERE type = 'Expense'
-    """)
+    cursor.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type='Expense' AND user_id=?", (user_id,))
     total_expense = cursor.fetchone()[0]
 
-    # Current Balance
     balance = total_income - total_expense
 
-    # Category-wise Expenses
     cursor.execute("""
-        SELECT category, COALESCE(SUM(amount), 0)
+        SELECT category, COALESCE(SUM(amount),0)
         FROM transactions
-        WHERE type = 'Expense'
+        WHERE type='Expense' AND user_id=?
         GROUP BY category
-    """)
+    """, (user_id,))
     category_expenses = cursor.fetchall()
 
     conn.close()
@@ -117,69 +151,89 @@ def reports():
         category_expenses=category_expenses
     )
 
+
 @app.route("/add_income", methods=["GET", "POST"])
+@login_required
 def add_income():
-
     if request.method == "POST":
-        source = request.form["source"]
-        amount = request.form["amount"]
+        source = request.form.get("source", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        entry_date = request.form.get("date", "").strip() or date.today().isoformat()
 
-        conn = sqlite3.connect("Expense_Tracker.db")
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Please enter a valid positive amount.")
+            return redirect(url_for("add_income"))
+
+        if not source:
+            flash("Please enter a source.")
+            return redirect(url_for("add_income"))
+
+        conn = get_db()
         cursor = conn.cursor()
-
         cursor.execute("""
-            INSERT INTO transactions (user_id, type, amount, category, description)
-            VALUES (?, ?, ?, ?, ?)
-        """, (1, "Income", amount, source, source))
-
+            INSERT INTO transactions (user_id, type, amount, category, description, date)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (session["user_id"], "Income", amount, source, source, entry_date))
         conn.commit()
         conn.close()
 
-        flash("Income Added Successfully!")
+        flash("Income added successfully!")
         return redirect(url_for("dashboard"))
 
-    return render_template("add_income.html")
+    return render_template("add_income.html", today=date.today().isoformat())
+
 
 @app.route("/add_expense", methods=["GET", "POST"])
+@login_required
 def add_expense():
-
     if request.method == "POST":
-        category = request.form["category"]
-        amount = request.form["amount"]
-        description = request.form["description"]
+        category = request.form.get("category", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        description = request.form.get("description", "").strip()
+        entry_date = request.form.get("date", "").strip() or date.today().isoformat()
 
-        conn = sqlite3.connect("Expense_Tracker.db")
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Please enter a valid positive amount.")
+            return redirect(url_for("add_expense"))
+
+        if not category:
+            flash("Please enter a category.")
+            return redirect(url_for("add_expense"))
+
+        conn = get_db()
         cursor = conn.cursor()
-
         cursor.execute("""
-            INSERT INTO transactions (user_id, type, amount, category, description)
-            VALUES (?, ?, ?, ?, ?)
-        """, (1, "Expense", amount, category, description))
-
+            INSERT INTO transactions (user_id, type, amount, category, description, date)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (session["user_id"], "Expense", amount, category, description, entry_date))
         conn.commit()
         conn.close()
 
-        flash("Expense Added Successfully!")
+        flash("Expense added successfully!")
         return redirect(url_for("dashboard"))
 
-    return render_template("add_expense.html")
+    return render_template("add_expense.html", today=date.today().isoformat())
+
 
 @app.route("/transaction_history")
+@login_required
 def transaction_history():
-
     search = request.args.get("search", "")
     transaction_type = request.args.get("type", "all")
 
-    conn = sqlite3.connect("Expense_Tracker.db")
+    conn = get_db()
     cursor = conn.cursor()
 
-    query = """
-        SELECT id, type, amount, category, description
-        FROM transactions
-        WHERE 1=1
-    """
-
-    params = []
+    query = "SELECT id, type, amount, category, description, date FROM transactions WHERE user_id=?"
+    params = [session["user_id"]]
 
     if search:
         query += " AND (category LIKE ? OR description LIKE ?)"
@@ -189,10 +243,10 @@ def transaction_history():
         query += " AND type = ?"
         params.append(transaction_type)
 
+    query += " ORDER BY date DESC, id DESC"
+
     cursor.execute(query, params)
-
     transactions = cursor.fetchall()
-
     conn.close()
 
     return render_template(
@@ -200,106 +254,137 @@ def transaction_history():
         transactions=transactions
     )
 
+
 @app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
+@login_required
 def edit_transaction(transaction_id):
-
-    conn = sqlite3.connect("expense_tracker.db")
-    cursor = conn.cursor()
-
-    if request.method == "POST":
-        category = request.form["category"]
-        amount = request.form["amount"]
-        description = request.form["description"]
-
-        cursor.execute("""
-            UPDATE transactions
-            SET category=?, amount=?, description=?
-            WHERE id=?
-        """, (category, amount, description, transaction_id))
-
-        conn.commit()
-        conn.close()
-
-        return redirect(url_for("transaction_history"))
-
-    cursor.execute("SELECT id, type, amount, category, description FROM transactions WHERE id=?", (transaction_id,))
-    transaction = cursor.fetchone()
-    print("Transaction =", transaction)
-    print("Length =", len(transaction))
-    conn.close()
-
-    return render_template("edit_transaction.html", transaction=transaction)
-
-@app.route("/delete_transaction/<int:transaction_id>")
-def delete_transaction(transaction_id):
-
-    conn = sqlite3.connect("Expense_Tracker.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
-        "DELETE FROM transactions WHERE id=?",
-        (transaction_id,)
+        "SELECT id, type, amount, category, description, date FROM transactions WHERE id=? AND user_id=?",
+        (transaction_id, session["user_id"])
     )
+    transaction = cursor.fetchone()
 
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("transaction_history"))
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-
-    if request.method == "POST":
-
-        email = request.form["email"]
-        password = request.form["password"]
-
-        conn = sqlite3.connect("Expense_Tracker.db")
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT * FROM users WHERE email=? AND password=?",
-            (email, password)
-        )
-
-        user = cursor.fetchone()
-
+    if transaction is None:
         conn.close()
-
-        if user:
-            flash("Login Successful!")
-            return redirect(url_for("dashboard"))
-
-        else:
-            flash("Invalid Email or Password!")
-            return redirect(url_for("login"))
-
-    return render_template("login.html")
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
+        flash("Transaction not found.")
+        return redirect(url_for("transaction_history"))
 
     if request.method == "POST":
+        category = request.form.get("category", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        description = request.form.get("description", "").strip()
+        entry_date = request.form.get("date", "").strip() or date.today().isoformat()
 
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Please enter a valid positive amount.")
+            conn.close()
+            return redirect(url_for("edit_transaction", transaction_id=transaction_id))
 
-        conn = sqlite3.connect("Expense_Tracker.db")
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-            (name, email, password)
-        )
-
+        cursor.execute("""
+            UPDATE transactions
+            SET category=?, amount=?, description=?, date=?
+            WHERE id=? AND user_id=?
+        """, (category, amount, description, entry_date, transaction_id, session["user_id"]))
         conn.commit()
         conn.close()
 
-        flash("Registration successful! Please log in.", "success")
+        flash("Transaction updated successfully!")
+        return redirect(url_for("transaction_history"))
+
+    conn.close()
+    return render_template("edit_transaction.html", transaction=transaction)
+
+
+@app.route("/delete_transaction/<int:transaction_id>")
+@login_required
+def delete_transaction(transaction_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM transactions WHERE id=? AND user_id=?",
+        (transaction_id, session["user_id"])
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Transaction deleted.")
+    return redirect(url_for("transaction_history"))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email=?", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user["password"], password):
+            session["user_id"] = user["id"]
+            session["user_name"] = user["name"]
+            flash("Login successful!")
+            return redirect(url_for("dashboard"))
+
+        flash("Invalid email or password.")
+        return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        if not name or not email or not password:
+            flash("All fields are required.")
+            return redirect(url_for("register"))
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters.")
+            return redirect(url_for("register"))
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+                (name, email, generate_password_hash(password))
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            flash("An account with that email already exists.")
+            conn.close()
+            return redirect(url_for("register"))
+
+        conn.close()
+
+        flash("Registration successful! Please log in.")
         return redirect(url_for("login"))
 
     return render_template("register.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You have been logged out.")
+    return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     create_database()

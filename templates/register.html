@@ -10,32 +10,77 @@
 
 <body>
 
-<div class="login-container">
+<div class="auth-page">
 
-    <h2>Create Account</h2>
+    <div class="auth-visual">
+        <div class="auth-visual-inner">
+            <div class="logo" style="margin-bottom:40px;">💜 Expense Tracker</div>
+            <h1>Start tracking<br>in under a minute.</h1>
+            <p>Free forever. No credit card, no clutter — just a clean place to log your income and expenses.</p>
 
-    <p>Join Expense Tracker today</p>
+            <div class="auth-mini-card">
+                <div class="preview-mini-row" style="margin-bottom:0;">
+                    <div class="preview-mini income">
+                        <span>Income</span>
+                        <strong>₹ 42,000</strong>
+                    </div>
+                    <div class="preview-mini expense">
+                        <span>Expense</span>
+                        <strong>₹ 17,150</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <form method="POST" action="/register">
+    <div class="auth-form-side">
 
-    <input type="text" name="name" placeholder="Full Name" required>
+        <nav class="auth-nav">
+            <h2>Expense Tracker</h2>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('features') }}">Features</a></li>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            </ul>
+        </nav>
 
-    <input type="email" name="email" placeholder="Email" required>
+        <div class="login-container">
 
-    <input type="password" name="password" placeholder="Password" required>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-msg">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
 
-    <button type="submit" class="primary-btn">
-        Register
-    </button>
+            <h2>Create Account</h2>
 
-</form>
+            <p>Join Expense Tracker today</p>
 
-    <p class="register-link">
-        Already have an account?
-        <a href="/login">Login</a>
-    </p>
+            <form method="POST" action="/register">
+
+                <input type="text" name="name" placeholder="Full Name" required>
+
+                <input type="email" name="email" placeholder="Email" required>
+
+                <input type="password" name="password" placeholder="Password" minlength="6" required>
+
+                <button type="submit" class="primary-btn">
+                    Register
+                </button>
+
+            </form>
+
+            <p class="register-link">
+                Already have an account?
+                <a href="/login">Login</a>
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

@@ -9,6 +9,12 @@
 </head>
 <body>
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-msg">{{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
+
     <nav>
         <h2>Expense Tracker</h2>
 
@@ -19,20 +25,100 @@
         </ul>
     </nav>
 
-    <section class="hero">
+    <section class="hero hero-split">
 
-        <h1>Manage Your Money Smarter</h1>
+        <div class="hero-text">
 
-        <p>
-            Track your income, expenses, savings and achieve your financial goals.
-        </p>
+            <span class="hero-badge">💜 Smart Personal Finance</span>
 
-        <div class="buttons">
-           <a href="/login" class="primary-btn">Get Started</a>
-           <a href="/learn_more" class="secondary-btn">Learn More</a>
+            <h1>Manage Your Money Smarter</h1>
+
+            <p>
+                Track your income, expenses, savings and achieve your financial goals — all in one clean, simple dashboard.
+            </p>
+
+            <div class="buttons">
+               <a href="/login" class="primary-btn">Get Started</a>
+               <a href="/learn_more" class="secondary-btn">Learn More</a>
+            </div>
+
+            <div class="trust-row">
+                <span>✅ 100% Free</span>
+                <span>🔒 Secure Login</span>
+                <span>⚡ Instant Reports</span>
+            </div>
+
+        </div>
+
+        <div class="hero-preview">
+
+            <div class="preview-card">
+
+                <div class="preview-card-header">
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                </div>
+
+                <p class="preview-label">Current Balance</p>
+                <h2 class="preview-balance">₹ 24,850</h2>
+
+                <div class="preview-mini-row">
+                    <div class="preview-mini income">
+                        <span>Income</span>
+                        <strong>₹ 42,000</strong>
+                    </div>
+                    <div class="preview-mini expense">
+                        <span>Expense</span>
+                        <strong>₹ 17,150</strong>
+                    </div>
+                </div>
+
+                <div class="preview-bar-track">
+                    <div class="preview-bar-fill"></div>
+                </div>
+
+            </div>
+
         </div>
 
     </section>
 
+    <section class="steps-section">
+
+        <h2 class="steps-title">Get started in three simple steps</h2>
+
+        <div class="steps-grid">
+
+            <div class="step-card">
+                <div class="step-circle">1</div>
+                <h3>Create an account</h3>
+                <p>Sign up in seconds — just your name, email and a password.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-circle">2</div>
+                <h3>Log your transactions</h3>
+                <p>Add income and expenses as they happen, with a category and note.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-circle">3</div>
+                <h3>Watch your balance grow</h3>
+                <p>See your dashboard and reports update instantly, every time.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="quote-section">
+        <div class="quote-box">
+            <p>"The simplest way I've found to actually stick with tracking my spending — no clutter, just numbers that make sense."</p>
+            <span class="quote-author">— A happy Expense Tracker user</span>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
