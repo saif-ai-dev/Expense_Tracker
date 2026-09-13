@@ -18,6 +18,7 @@
             <li><a href="{{ url_for('dashboard') }}" class="active">Dashboard</a></li>
             <li><a href="{{ url_for('transaction_history') }}">History</a></li>
             <li><a href="{{ url_for('reports') }}">Reports</a></li>
+            <li><a href="{{ url_for('budgets') }}">Budgets</a></li>
             <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
     </nav>
@@ -63,6 +64,31 @@
 
         </div>
 
+        {% if budget_status %}
+        <div class="section-title">
+            <h2>Budget Overview</h2>
+            <a href="{{ url_for('budgets') }}">Manage budgets →</a>
+        </div>
+
+        <div class="budget-list dashboard-budget-list">
+            {% for b in budget_status %}
+            <div class="budget-item-card">
+                <div class="budget-item-head">
+                    <span class="budget-cat-name">{{ b.category }}</span>
+                </div>
+                <div class="budget-progress-track">
+                    <div class="budget-progress-fill {{ 'over-budget' if b.over else '' }}" style="width: {{ b.percent }}%;"></div>
+                </div>
+                <div class="budget-item-foot {{ 'over-budget-text' if b.over else '' }}">
+                    ₹{{ "%.0f"|format(b.spent) }} / ₹{{ "%.0f"|format(b.limit) }}
+                    {% if b.over %} — over!{% else %} ({{ b.percent }}%){% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
         <div class="quick-actions-grid">
 
             <a href="/add_income" class="quick-action-card">
@@ -85,6 +111,11 @@
                 <span>Reports</span>
             </a>
 
+            <a href="/budgets" class="quick-action-card">
+                <span class="qa-icon">🎯</span>
+                <span>Budgets</span>
+            </a>
+
         </div>
 
         <div class="section-title">
@@ -96,7 +127,7 @@
             {% if recent %}
             <table class="history-table">
                 <thead>
-                    <tr><th>Type</th><th>Category</th><th>Description</th><th>Amount</th></tr>
+                    <tr><th>Type</th><th>Category</th><th>Description</th><th>Date</th><th>Amount</th></tr>
                 </thead>
                 <tbody>
                     {% for t in recent %}
@@ -104,6 +135,7 @@
                         <td><span class="type-badge {{ 'income' if t[1]=='Income' else 'expense' }}">{{ t[1] }}</span></td>
                         <td>{{ t[3] }}</td>
                         <td>{{ t[4] or '—' }}</td>
+                        <td>{{ t[5] or '—' }}</td>
                         <td class="amount-cell {{ 'income' if t[1]=='Income' else 'expense' }}">
                             {{ '+' if t[1]=='Income' else '−' }} ₹{{ "%.2f"|format(t[2]) }}
                         </td>

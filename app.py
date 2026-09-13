@@ -49,8 +49,58 @@ def create_database():
     except sqlite3.OperationalError:
         pass
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS budgets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            category TEXT NOT NULL,
+            monthly_limit REAL NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            UNIQUE(user_id, category)
+        )
+    """)
+
     conn.commit()
     conn.close()
+
+
+def get_budget_status(user_id):
+    """Returns each budget the user has set, along with how much they've
+    spent in that category so far this calendar month."""
+    conn = get_db()
+    cursor = conn.cursor()
+
+    current_month = date.today().strftime("%Y-%m")
+
+    cursor.execute(
+        "SELECT id, category, monthly_limit FROM budgets WHERE user_id=? ORDER BY category",
+        (user_id,)
+    )
+    budget_rows = cursor.fetchall()
+
+    status = []
+    for b in budget_rows:
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0)
+            FROM transactions
+            WHERE user_id=? AND type='Expense' AND category=? AND date LIKE ?
+        """, (user_id, b["category"], current_month + "%"))
+        spent = cursor.fetchone()[0]
+
+        limit_ = b["monthly_limit"]
+        percent = min(100, round((spent / limit_) * 100)) if limit_ > 0 else 0
+
+        status.append({
+            "id": b["id"],
+            "category": b["category"],
+            "limit": limit_,
+            "spent": spent,
+            "percent": percent,
+            "over": spent > limit_
+        })
+
+    conn.close()
+    return status
 
 
 def login_required(view_func):
@@ -108,13 +158,15 @@ def dashboard():
     conn.close()
 
     balance = total_income - total_expense
+    budget_status = get_budget_status(user_id)
 
     return render_template(
         "dashboard.html",
         total_income=total_income,
         total_expense=total_expense,
         balance=balance,
-        recent=recent
+        recent=recent,
+        budget_status=budget_status
     )
 
 
@@ -215,12 +267,83 @@ def add_expense():
             VALUES (?, ?, ?, ?, ?, ?)
         """, (session["user_id"], "Expense", amount, category, description, entry_date))
         conn.commit()
+
+        # If this category has a monthly budget, check whether this entry
+        # (dated in the current month) pushed spending over the limit.
+        warning = ""
+        current_month = date.today().strftime("%Y-%m")
+        if entry_date.startswith(current_month):
+            budget_row = cursor.execute(
+                "SELECT monthly_limit FROM budgets WHERE user_id=? AND category=?",
+                (session["user_id"], category)
+            ).fetchone()
+            if budget_row:
+                spent = cursor.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id=? AND type='Expense' AND category=? AND date LIKE ?
+                """, (session["user_id"], category, current_month + "%")).fetchone()[0]
+                if spent > budget_row["monthly_limit"]:
+                    warning = f" ⚠️ You've gone over your {category} budget (₹{spent:.0f} / ₹{budget_row['monthly_limit']:.0f})."
+
         conn.close()
 
-        flash("Expense added successfully!")
+        flash("Expense added successfully!" + warning)
         return redirect(url_for("dashboard"))
 
     return render_template("add_expense.html", today=date.today().isoformat())
+
+
+@app.route("/budgets", methods=["GET", "POST"])
+@login_required
+def budgets():
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+        category = request.form.get("category", "").strip()
+        limit_raw = request.form.get("monthly_limit", "").strip()
+
+        try:
+            monthly_limit = float(limit_raw)
+            if monthly_limit <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Please enter a valid positive budget amount.")
+            return redirect(url_for("budgets"))
+
+        if not category:
+            flash("Please enter a category.")
+            return redirect(url_for("budgets"))
+
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO budgets (user_id, category, monthly_limit)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, category) DO UPDATE SET monthly_limit=excluded.monthly_limit
+        """, (user_id, category, monthly_limit))
+        conn.commit()
+        conn.close()
+
+        flash(f"Budget for {category} set to ₹{monthly_limit:.0f}/month.")
+        return redirect(url_for("budgets"))
+
+    return render_template("budgets.html", budget_status=get_budget_status(user_id))
+
+
+@app.route("/delete_budget/<int:budget_id>")
+@login_required
+def delete_budget(budget_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM budgets WHERE id=? AND user_id=?",
+        (budget_id, session["user_id"])
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Budget removed.")
+    return redirect(url_for("budgets"))
 
 
 @app.route("/transaction_history")

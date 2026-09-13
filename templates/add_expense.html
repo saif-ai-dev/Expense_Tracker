@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Expense</title>
+    <title>Add Income - Expense Tracker</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
 
     <nav>
@@ -14,6 +17,7 @@
             <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
             <li><a href="{{ url_for('transaction_history') }}">History</a></li>
             <li><a href="{{ url_for('reports') }}">Reports</a></li>
+            <li><a href="{{ url_for('budgets') }}">Budgets</a></li>
             <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
     </nav>
@@ -26,38 +30,50 @@
 
     <div class="form-page">
 
-        <div class="expense-container expense-mode">
+        <div class="expense-container income-mode">
 
-            <div class="form-icon-header">💸</div>
+            <div class="form-icon-header">💰</div>
 
-            <h1>Add Expense</h1>
-            <p class="form-subtext">Record money going out</p>
+            <h1>Add Income</h1>
+            <p class="form-subtext">Record money coming in</p>
 
-            <form action="{{ url_for('add_expense') }}" method="POST">
+            <form method="POST">
 
-                <label>Expense Category</label>
-                <input type="text" id="category" name="category" placeholder="e.g. Groceries, Travel, Bills" required>
+                <label>Income Source</label>
+                <input type="text"
+                       id="source"
+                       name="source"
+                       placeholder="e.g. Salary, Freelance, Bonus"
+                       required>
 
                 <div class="chip-row">
-                    <span class="chip" data-target="category">Groceries</span>
-                    <span class="chip" data-target="category">Rent</span>
-                    <span class="chip" data-target="category">Bill</span>
-                    <span class="chip" data-target="category">Travel</span>
-                    <span class="chip" data-target="category">Shopping</span>
-                    <span class="chip" data-target="category">Entertainment</span>
+                    <span class="chip" data-target="source">Salary</span>
+                    <span class="chip" data-target="source">Freelance</span>
+                    <span class="chip" data-target="source">Business</span>
+                    <span class="chip" data-target="source">Rental Income</span>
+                    <span class="chip" data-target="source">Bonus</span>
                 </div>
 
                 <label>Amount (₹)</label>
-                <input type="number" name="amount" min="0.01" step="0.01" placeholder="0.00" required>
+                <input type="number"
+                       name="amount"
+                       min="0.01"
+                       step="0.01"
+                       placeholder="0.00"
+                       required>
 
-                <label>Description</label>
-                <input type="text" name="description" placeholder="Optional note">
+                <label>Date</label>
+                <input type="date" name="date" value="{{ today }}" required>
 
-                <button type="submit" class="primary-btn">Add Expense</button>
+                <button type="submit" class="primary-btn">
+                    Add Income
+                </button>
 
             </form>
 
-            <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+            <a href="/dashboard" class="back-btn">
+                ← Back to Dashboard
+            </a>
 
         </div>
 
@@ -65,4 +81,5 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>

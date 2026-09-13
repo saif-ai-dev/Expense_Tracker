@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgets - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h2>Expense Tracker</h2>
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('transaction_history') }}">History</a></li>
+        <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('budgets') }}" class="active">Budgets</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-msg">{{ messages[0] }}</div>
+    {% endif %}
+{% endwith %}
+
+<section class="history-section">
+
+    <h1>🎯 Monthly Budgets</h1>
+    <p>Set a spending limit per category and track it against this month's expenses.</p>
+
+    <div class="budget-form-card">
+        <h3>Set a budget</h3>
+        <form method="POST" action="{{ url_for('budgets') }}" class="budget-form">
+            <input type="text" id="budget-category" name="category" placeholder="Category (e.g. Groceries)" required>
+            <input type="number" name="monthly_limit" min="1" step="1" placeholder="Monthly limit (₹)" required>
+            <button type="submit" class="primary-btn">Save Budget</button>
+        </form>
+        <div class="chip-row">
+            <span class="chip" data-target="budget-category">Groceries</span>
+            <span class="chip" data-target="budget-category">Rent</span>
+            <span class="chip" data-target="budget-category">Bill</span>
+            <span class="chip" data-target="budget-category">Travel</span>
+            <span class="chip" data-target="budget-category">Shopping</span>
+            <span class="chip" data-target="budget-category">Entertainment</span>
+        </div>
+    </div>
+
+    {% if budget_status %}
+    <div class="budget-list">
+        {% for b in budget_status %}
+        <div class="budget-item-card">
+            <div class="budget-item-head">
+                <span class="budget-cat-name">{{ b.category }}</span>
+                <a href="{{ url_for('delete_budget', budget_id=b.id) }}"
+                   class="delete-btn"
+                   onclick="return confirm('Remove budget for {{ b.category }}?')">Remove</a>
+            </div>
+            <div class="budget-progress-track">
+                <div class="budget-progress-fill {{ 'over-budget' if b.over else '' }}" style="width: {{ b.percent }}%;"></div>
+            </div>
+            <div class="budget-item-foot {{ 'over-budget-text' if b.over else '' }}">
+                ₹{{ "%.0f"|format(b.spent) }} spent of ₹{{ "%.0f"|format(b.limit) }}
+                {% if b.over %} — over budget!{% else %} ({{ b.percent }}%){% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No budgets set yet — add one above to start tracking.</div>
+    {% endif %}
+
+</section>
+
+<div class="back-dashboard">
+    <a href="{{ url_for('dashboard') }}" class="back-btn">← Back to Dashboard</a>
+</div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

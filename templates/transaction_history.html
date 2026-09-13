@@ -18,6 +18,7 @@
         <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
         <li><a href="{{ url_for('transaction_history') }}" class="active">History</a></li>
         <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('budgets') }}">Budgets</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
     </ul>
 </nav>
@@ -74,6 +75,7 @@
                     <th>Amount</th>
                     <th>Category</th>
                     <th>Description</th>
+                    <th>Date</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -93,6 +95,7 @@
                     </td>
                     <td>{{ transaction[3] }}</td>
                     <td>{{ transaction[4] or '—' }}</td>
+                    <td>{{ transaction[5] or '—' }}</td>
 
                     <td>
                         <div class="row-actions">

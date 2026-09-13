@@ -1180,3 +1180,97 @@ body {
     .benefits-grid { grid-template-columns: 1fr; }
     .lm-steps-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================
+   BUDGETS — form card, progress bars, list
+   ============================================ */
+.budget-form-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.budget-form-card h3 {
+    color: var(--ink);
+    margin-bottom: 16px;
+    font-size: 17px;
+}
+
+.budget-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.budget-form input {
+    flex: 1;
+    min-width: 160px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: var(--font);
+    background: var(--bg);
+    transition: border-color 0.2s ease;
+}
+.budget-form input:focus { outline: none; border-color: var(--brand); background: white; }
+
+.budget-form .primary-btn { padding: 12px 26px; }
+
+.budget-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    text-align: left;
+}
+
+.dashboard-budget-list { margin-bottom: 44px; }
+
+.budget-item-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.budget-item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.budget-cat-name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 15px;
+}
+
+.budget-progress-track {
+    height: 10px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.budget-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand-deep), var(--brand));
+    transition: width 0.5s ease;
+}
+.budget-progress-fill.over-budget {
+    background: linear-gradient(90deg, #b8323f, var(--expense));
+}
+
+.budget-item-foot {
+    font-size: 13.5px;
+    color: var(--muted);
+    font-weight: 600;
+}
+.budget-item-foot.over-budget-text { color: var(--expense); }
