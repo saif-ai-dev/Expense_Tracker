@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h2>Expense Tracker</h2>
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('transaction_history') }}">History</a></li>
+        <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('budgets') }}">Budgets</a></li>
+        <li><a href="{{ url_for('profile') }}" class="active">Profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-msg">{{ messages[0] }}</div>
+    {% endif %}
+{% endwith %}
+
+<div class="form-page profile-page">
+
+    <div class="expense-container">
+
+        <div class="form-icon-header">👤</div>
+
+        <h1>My Profile</h1>
+        <p class="form-subtext">Update your account details</p>
+
+        <form method="POST">
+            <input type="hidden" name="form_type" value="update_info">
+
+            <label>Full Name</label>
+            <input type="text" name="name" value="{{ user['name'] }}" required>
+
+            <label>Email</label>
+            <input type="email" name="email" value="{{ user['email'] }}" required>
+
+            <button type="submit" class="primary-btn">Save Changes</button>
+        </form>
+
+    </div>
+
+    <div class="expense-container">
+
+        <div class="form-icon-header">🔒</div>
+
+        <h1>Change Password</h1>
+        <p class="form-subtext">Choose a new password for your account</p>
+
+        <form method="POST">
+            <input type="hidden" name="form_type" value="change_password">
+
+            <label>Current Password</label>
+            <input type="password" name="current_password" required>
+
+            <label>New Password</label>
+            <input type="password" name="new_password" minlength="6" required>
+
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm_password" minlength="6" required>
+
+            <button type="submit" class="primary-btn">Update Password</button>
+        </form>
+
+    </div>
+
+    <a href="/dashboard" class="back-btn" style="display:block; text-align:center;">← Back to Dashboard</a>
+
+</div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

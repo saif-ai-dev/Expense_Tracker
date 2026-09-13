@@ -19,6 +19,7 @@
         <li><a href="{{ url_for('transaction_history') }}" class="active">History</a></li>
         <li><a href="{{ url_for('reports') }}">Reports</a></li>
         <li><a href="{{ url_for('budgets') }}">Budgets</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
     </ul>
 </nav>
@@ -60,6 +61,10 @@
 
         <a href="{{ url_for('transaction_history') }}" class="reset-btn">
             Reset
+        </a>
+
+        <a href="{{ url_for('export_csv') }}" class="btn-csv">
+            📥 Download CSV
         </a>
 
     </form>

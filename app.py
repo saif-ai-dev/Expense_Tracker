@@ -1,7 +1,9 @@
 from functools import wraps
 from datetime import date
+import csv
+import io
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -345,6 +347,33 @@ def delete_budget(budget_id):
     flash("Budget removed.")
     return redirect(url_for("budgets"))
 
+@app.route("/export_csv")
+@login_required
+def export_csv():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT date, type, category, description, amount
+        FROM transactions
+        WHERE user_id=?
+        ORDER BY date DESC, id DESC
+    """, (session["user_id"],))
+    rows = cursor.fetchall()
+    conn.close()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["Date", "Type", "Category", "Description", "Amount"])
+    for r in rows:
+        writer.writerow([r["date"] or "", r["type"], r["category"], r["description"] or "", r["amount"]])
+
+    filename = f"expense_tracker_history_{date.today().isoformat()}.csv"
+
+    return Response(
+        buffer.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @app.route("/transaction_history")
 @login_required
@@ -501,6 +530,75 @@ def register():
 
     return render_template("register.html")
 
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+        form_type = request.form.get("form_type")
+        conn = get_db()
+        cursor = conn.cursor()
+
+        if form_type == "update_info":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+
+            if not name or not email:
+                flash("Name and email cannot be empty.")
+                conn.close()
+                return redirect(url_for("profile"))
+
+            try:
+                cursor.execute(
+                    "UPDATE users SET name=?, email=? WHERE id=?",
+                    (name, email, user_id)
+                )
+                conn.commit()
+                session["user_name"] = name
+                flash("Profile updated successfully!")
+            except sqlite3.IntegrityError:
+                flash("That email is already in use by another account.")
+
+            conn.close()
+            return redirect(url_for("profile"))
+
+        elif form_type == "change_password":
+            current_password = request.form.get("current_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            user = cursor.execute(
+                "SELECT password FROM users WHERE id=?", (user_id,)
+            ).fetchone()
+
+            if not user or not check_password_hash(user["password"], current_password):
+                flash("Current password is incorrect.")
+            elif len(new_password) < 6:
+                flash("New password must be at least 6 characters.")
+            elif new_password != confirm_password:
+                flash("New passwords do not match.")
+            else:
+                cursor.execute(
+                    "UPDATE users SET password=? WHERE id=?",
+                    (generate_password_hash(new_password), user_id)
+                )
+                conn.commit()
+                flash("Password changed successfully!")
+
+            conn.close()
+            return redirect(url_for("profile"))
+
+        conn.close()
+        return redirect(url_for("profile"))
+
+    conn = get_db()
+    user = conn.execute(
+        "SELECT id, name, email FROM users WHERE id=?", (user_id,)
+    ).fetchone()
+    conn.close()
+
+    return render_template("profile.html", user=user)
 
 @app.route("/logout")
 def logout():

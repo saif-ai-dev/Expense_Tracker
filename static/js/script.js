@@ -1,3 +1,13 @@
+// Apply saved dark-mode preference as early as possible (before DOMContentLoaded)
+// to avoid a flash of the light theme on page load.
+(function () {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+})();
+
+// Auto-dismiss flash messages after a few seconds
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.flash-msg').forEach(function (el) {
         setTimeout(function () {
@@ -8,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3500);
     });
 
+    // Mark the current page's nav link as active
     var here = window.location.pathname;
     document.querySelectorAll('nav a, .nav-links a').forEach(function (link) {
         if (link.getAttribute('href') === here) {
@@ -15,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // One orchestrated count-up moment for dashboard/report figures
     document.querySelectorAll('[data-count]').forEach(function (el) {
         var target = parseFloat(el.getAttribute('data-count')) || 0;
         var duration = 650;
@@ -31,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
         requestAnimationFrame(tick);
     });
 
+    // Category / source quick-select chips (Add Income / Add Expense pages)
     document.querySelectorAll('.chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
             var targetId = chip.getAttribute('data-target');
@@ -45,4 +58,31 @@ document.addEventListener('DOMContentLoaded', function () {
             chip.classList.add('chip-active');
         });
     });
+
+    // Dark mode toggle — floating button, appended to every page
+    var toggle = document.createElement('button');
+    toggle.className = 'theme-toggle';
+    toggle.setAttribute('aria-label', 'Toggle dark mode');
+    toggle.type = 'button';
+
+    function setIcon() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        toggle.textContent = isDark ? '☀️' : '🌙';
+    }
+    setIcon();
+
+    toggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+        setIcon();
+    });
+
+    document.body.appendChild(toggle);
 });
+
