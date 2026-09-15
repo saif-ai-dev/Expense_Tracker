@@ -1389,3 +1389,47 @@ html[data-theme="dark"] .report-table th {
 .profile-page .expense-container {
     margin: 0;
 }
+
+/* ============================================
+   HOME PAGE — extra polish: gradient text, floating
+   preview card, scroll-reveal
+   ============================================ */
+.text-gradient {
+    background: linear-gradient(120deg, var(--brand-deep), var(--brand), var(--income));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 6s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.preview-card {
+    animation: preview-in 0.6s ease both, preview-float 4.5s ease-in-out 0.6s infinite;
+}
+
+@keyframes preview-float {
+    0%, 100% { transform: rotate(-2deg) translateY(0); }
+    50%      { transform: rotate(-2deg) translateY(-10px); }
+}
+
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal-on-scroll.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .text-gradient, .preview-card { animation: none; }
+    .reveal-on-scroll { opacity: 1; transform: none; }
+}

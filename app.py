@@ -2,13 +2,14 @@ from functools import wraps
 from datetime import date
 import csv
 import io
+import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "expense_tracker_secret"
+app.secret_key = os.environ.get("SECRET_KEY", "expense_tracker_secret")
 
 DB_NAME = "Expense_Tracker.db"
 
@@ -608,5 +609,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    create_database()
     app.run(debug=True)

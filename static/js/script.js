@@ -84,5 +84,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.body.appendChild(toggle);
+
+    var revealTargets = document.querySelectorAll('.reveal-on-scroll');
+    if (revealTargets.length && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        revealTargets.forEach(function (el) { observer.observe(el); });
+    } else {
+        revealTargets.forEach(function (el) { el.classList.add('in-view'); });
+    }
 });
 
